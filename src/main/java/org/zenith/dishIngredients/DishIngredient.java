@@ -1,5 +1,6 @@
 package org.zenith.dishIngredients;
 
+import org.zenith.dishIngredients.entity.Ingredient;
 import org.zenith.dishIngredients.entity.Unit;
 
 public class DishIngredient {

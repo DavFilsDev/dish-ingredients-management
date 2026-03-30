@@ -1,6 +1,4 @@
-package org.zenith.dishIngredients;
-
-import org.zenith.dishIngredients.entity.*;
+package org.zenith.dishIngredients.entity;
 
 import java.time.Instant;
 import java.util.List;
@@ -98,34 +96,20 @@ public class Ingredient {
 
         return new StockValue(totalQuantity, unit);
     }
-
-    @Override
-    public String toString() {
-        return "Ingredient{"
-                + "id="
-                + id
-                + ", name='"
-                + name
-                + '\''
-                + ", price="
-                + price
-                + ", category="
-                + category
-                + '}';
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Ingredient that)) return false;
-        return id == that.id
-                && Double.compare(that.price, price) == 0
-                && Objects.equals(name, that.name)
-                && category == that.category;
+        return id == that.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, price, category);
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Ingredient{id=" + id + ", name='" + name + "', price=" + price + ", category=" + category + "}";
     }
 }
