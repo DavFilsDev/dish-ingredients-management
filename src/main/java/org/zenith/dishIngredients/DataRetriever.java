@@ -943,7 +943,7 @@ public class DataRetriever {
         throw new RuntimeException("Failed to save ingredient: " + toSave.getName());
     }
 
-    private void saveStockMovements(Connection conn, int ingredientId, List<StockMouvement> movements)
+    private void saveStockMovements(Connection conn, int ingredientId, List<StockMouvement> mouvements)
             throws SQLException {
         String insertWithId =
                 """
@@ -968,16 +968,16 @@ public class DataRetriever {
                     psWithId.setInt(1, mouvement.getId());
                     psWithId.setInt(2, ingredientId);
                     psWithId.setDouble(3, value.getQuantity());
-                    psWithId.setString(4, movement.getType().name());
+                    psWithId.setString(4, mouvement.getType().name());
                     psWithId.setString(5, value.getUnit().name());
-                    psWithId.setTimestamp(6, Timestamp.from(movement.getCreationDateTime()));
+                    psWithId.setTimestamp(6, Timestamp.from(mouvement.getCreationDateTime()));
                     psWithId.addBatch();
                 } else {
                     psWithoutId.setInt(1, ingredientId);
                     psWithoutId.setDouble(2, value.getQuantity());
-                    psWithoutId.setString(3, movement.getType().name());
+                    psWithoutId.setString(3, mouvement.getType().name());
                     psWithoutId.setString(4, value.getUnit().name());
-                    psWithoutId.setTimestamp(5, Timestamp.from(movement.getCreationDateTime()));
+                    psWithoutId.setTimestamp(5, Timestamp.from(mouvement.getCreationDateTime()));
                     psWithoutId.addBatch();
                 }
             }
