@@ -1,6 +1,4 @@
-package org.zenith.dishIngredients;
-
-import org.zenith.dishIngredients.entity.Unit;
+package org.zenith.dishIngredients.entity;
 
 public class StockValue {
 
