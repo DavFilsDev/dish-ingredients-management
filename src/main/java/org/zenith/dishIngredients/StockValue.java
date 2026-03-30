@@ -1,5 +1,7 @@
 package org.zenith.dishIngredients;
 
+import org.zenith.dishIngredients.entity.Unit;
+
 public class StockValue {
 
     private final double quantity;

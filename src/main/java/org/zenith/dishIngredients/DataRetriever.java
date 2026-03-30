@@ -1,5 +1,7 @@
 package org.zenith.dishIngredients;
 
+import org.zenith.dishIngredients.entity.Unit;
+
 import static java.sql.Types.INTEGER;
 
 import java.sql.*;
