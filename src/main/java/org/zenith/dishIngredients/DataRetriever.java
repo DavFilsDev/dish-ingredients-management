@@ -582,7 +582,7 @@ public class DataRetriever {
         }
     }
 
-    public List<Dish> findDishByIngredientName(String ingredientName) {
+    public List<Dish> findDishsByIngredientName(String ingredientName) {
         List<Dish> dishes = new ArrayList<>();
         String sql =
                 """
