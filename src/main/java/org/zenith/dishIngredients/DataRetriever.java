@@ -1,6 +1,7 @@
 package org.zenith.dishIngredients;
 
 import org.zenith.dishIngredients.entity.CategoryEnum;
+import org.zenith.dishIngredients.entity.DishTypeEnum;
 import org.zenith.dishIngredients.entity.Unit;
 
 import static java.sql.Types.INTEGER;
