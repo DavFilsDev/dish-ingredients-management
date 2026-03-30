@@ -1,5 +1,6 @@
 package org.zenith.dishIngredients;
 
+import org.zenith.dishIngredients.entity.CategoryEnum;
 import org.zenith.dishIngredients.entity.Unit;
 
 import java.time.Instant;
