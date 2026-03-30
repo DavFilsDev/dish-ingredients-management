@@ -1,7 +1,4 @@
-package org.zenith.dishIngredients;
-
-import org.zenith.dishIngredients.entity.MouvementTypeEnum;
-import org.zenith.dishIngredients.entity.StockValue;
+package org.zenith.dishIngredients.entity;
 
 import java.time.Instant;
 
