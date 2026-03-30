@@ -770,7 +770,7 @@ public class DataRetriever {
             }
         }
 
-        List<StockMouvement> movements = new ArrayList<>();
+        List<StockMouvement> mouvements = new ArrayList<>();
 
         try (PreparedStatement ps =
                      conn.prepareStatement(
@@ -781,18 +781,18 @@ public class DataRetriever {
                 while (rs.next()) {
                     StockValue value =
                             new StockValue(rs.getDouble("quantity"), Unit.valueOf(rs.getString("unit")));
-                    StockMouvement movement =
+                    StockMouvement mouvement =
                             new StockMouvement(
                                     rs.getInt("id"),
                                     value,
-                                    MovementTypeEnum.valueOf(rs.getString("type")),
+                                    MouvementTypeEnum.valueOf(rs.getString("type")),
                                     rs.getTimestamp("creation_datetime").toInstant());
-                    movements.add(movement);
+                    mouvements.add(mouvement);
                 }
             }
         }
 
-        ingredient.setStockMovementList(movements);
+        ingredient.setStockMovementList(mouvements);
         return ingredient;
     }
 
@@ -961,11 +961,11 @@ public class DataRetriever {
         try (PreparedStatement psWithId = conn.prepareStatement(insertWithId);
              PreparedStatement psWithoutId = conn.prepareStatement(insertWithoutId)) {
 
-            for (StockMouvement movement : movements) {
-                StockValue value = movement.getValue();
+            for (StockMouvement mouvement : mouvements) {
+                StockValue value = mouvement.getValue();
 
-                if (movement.getId() > 0) {
-                    psWithId.setInt(1, movement.getId());
+                if (mouvement.getId() > 0) {
+                    psWithId.setInt(1, mouvement.getId());
                     psWithId.setInt(2, ingredientId);
                     psWithId.setDouble(3, value.getQuantity());
                     psWithId.setString(4, movement.getType().name());

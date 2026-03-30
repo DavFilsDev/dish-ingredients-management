@@ -6,10 +6,10 @@ public class StockMouvement {
 
     private final int id;
     private final StockValue value;
-    private final MovementTypeEnum type;
+    private final MouvementTypeEnum type;
     private final Instant creationDateTime;
 
-    public StockMouvement(int id, StockValue value, MovementTypeEnum type, Instant creationDateTime) {
+    public StockMouvement(int id, StockValue value, MouvementTypeEnum type, Instant creationDateTime) {
         this.id = id;
         this.value = value;
         this.type = type;
@@ -24,7 +24,7 @@ public class StockMouvement {
         return value;
     }
 
-    public MovementTypeEnum getType() {
+    public MouvementTypeEnum getType() {
         return type;
     }
 
