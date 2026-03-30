@@ -83,9 +83,9 @@ public class Ingredient {
             }
 
             double qty = value.getQuantity();
-            if (movement.getType() == MovementTypeEnum.IN) {
+            if (movement.getType() == MouvementTypeEnum.IN) {
                 totalQuantity += qty;
-            } else if (movement.getType() == MovementTypeEnum.OUT) {
+            } else if (movement.getType() == MouvementTypeEnum.OUT) {
                 totalQuantity -= qty;
             }
         }
