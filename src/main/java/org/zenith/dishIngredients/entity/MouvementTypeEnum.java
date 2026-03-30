@@ -1,4 +1,4 @@
-package org.zenith.dishIngredients;
+package org.zenith.dishIngredients.entity;
 
 public enum MouvementTypeEnum {
     IN,
