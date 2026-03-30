@@ -1,5 +1,7 @@
 package org.zenith.dishIngredients;
 
+import org.zenith.dishIngredients.entity.Dish;
+
 import java.time.Instant;
 import java.util.*;
 

@@ -1,5 +1,7 @@
 package org.zenith.dishIngredients;
 
+import org.zenith.dishIngredients.entity.Dish;
+
 public class DishOrder {
     private final int id;
     private final Dish dish;
