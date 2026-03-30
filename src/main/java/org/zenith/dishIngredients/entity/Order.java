@@ -1,7 +1,5 @@
 package org.zenith.dishIngredients.entity;
 
-import org.zenith.dishIngredients.TableOrder;
-import org.zenith.dishIngredients.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
