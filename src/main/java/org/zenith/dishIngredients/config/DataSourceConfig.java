@@ -22,7 +22,10 @@ public class DataSourceConfig {
         String password = dotenv.get("PASSWORD");
 
         if (jdbcUrl == null || username == null || password == null) {
-            throw new IllegalStateException("Missing database configuration in .env file");
+            throw new IllegalStateException(
+                    "Missing database configuration in .env file. " +
+                            "Please ensure JDBC_URL, DB_USER, and PASSWORD are defined."
+            );
         }
 
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
