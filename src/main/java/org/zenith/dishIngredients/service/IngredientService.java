@@ -30,8 +30,8 @@ public class IngredientService {
         this.stockMovementRepository = stockMovementRepository;
     }
 
-    public List<IngredientResponseDTO> getAllIngredients(int page, int size) {
-        List<Ingredient> ingredients = ingredientRepository.findAll(page, size);
+    public List<IngredientResponseDTO> getAllIngredients() {
+        List<Ingredient> ingredients = ingredientRepository.findAll();
         return ingredients.stream()
                 .map(IngredientResponseDTO::fromEntity)
                 .collect(Collectors.toList());

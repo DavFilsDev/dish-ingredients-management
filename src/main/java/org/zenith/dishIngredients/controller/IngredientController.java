@@ -24,17 +24,8 @@ public class IngredientController {
     }
 
     @GetMapping
-    public ResponseEntity<List<IngredientResponseDTO>> getIngredients(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        if (page < 1) {
-            page = 1;
-        }
-        if (size < 1) {
-            size = 10;
-        }
-
-        List<IngredientResponseDTO> ingredients = ingredientService.getAllIngredients(page, size);
+    public ResponseEntity<List<IngredientResponseDTO>> getIngredients() {
+        List<IngredientResponseDTO> ingredients = ingredientService.getAllIngredients();
         return ResponseEntity.ok(ingredients);
     }
 

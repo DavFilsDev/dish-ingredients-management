@@ -23,16 +23,13 @@ public class IngredientRepository {
         this.dataSource = dataSource;
     }
 
-    public List<Ingredient> findAll(int page, int size) {
-        int offset = (page - 1) * size;
-        String sql = "SELECT id, name, price, category FROM ingredient LIMIT ? OFFSET ?";
+    public List<Ingredient> findAll() {
+        String sql = "SELECT id, name, price, category FROM ingredient ORDER BY id";
 
         List<Ingredient> ingredients = new ArrayList<>();
         Connection conn = dataSource.getConnection();
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, size);
-            ps.setInt(2, offset);
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -41,7 +38,7 @@ public class IngredientRepository {
             }
             return ingredients;
         } catch (SQLException e) {
-            throw new RuntimeException("Error fetching ingredients", e);
+            throw new RuntimeException("Error fetching all ingredients", e);
         } finally {
             dataSource.closeConnection(conn);
         }
@@ -145,27 +142,6 @@ public class IngredientRepository {
             return movements;
         } catch (SQLException e) {
             throw new RuntimeException("Error fetching stock movements", e);
-        } finally {
-            dataSource.closeConnection(conn);
-        }
-    }
-
-    public List<Ingredient> findAll() {
-        String sql = "SELECT id, name, price, category FROM ingredient ORDER BY id";
-
-        List<Ingredient> ingredients = new ArrayList<>();
-        Connection conn = dataSource.getConnection();
-
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                Ingredient ingredient = mapIngredient(rs);
-                ingredients.add(ingredient);
-            }
-            return ingredients;
-        } catch (SQLException e) {
-            throw new RuntimeException("Error fetching all ingredients", e);
         } finally {
             dataSource.closeConnection(conn);
         }
