@@ -234,7 +234,7 @@ public class StockMovementRepository {
     public StockMouvement createMovement(int ingredientId, StockMouvement movement) {
         String sql = """
             INSERT INTO stock_movement(id_ingredient, quantity, type, unit, creation_datetime)
-            VALUES (?, ?, ?::movement_type, ?::unit_type, ?)
+            VALUES (?, ?, CAST(? AS movement_type), CAST(? AS unit_type), ?)
             RETURNING id, quantity, type, unit, creation_datetime
             """;
 
@@ -248,6 +248,7 @@ public class StockMovementRepository {
             ps.setTimestamp(5, Timestamp.from(movement.getCreationDateTime()));
 
             ResultSet rs = ps.executeQuery();
+
             if (rs.next()) {
                 StockValue value = new StockValue(
                         rs.getDouble("quantity"),
@@ -260,9 +261,9 @@ public class StockMovementRepository {
                         rs.getTimestamp("creation_datetime").toInstant()
                 );
             }
-            throw new RuntimeException("Failed to create stock movement");
+            throw new RuntimeException("Failed to create stock movement: no rows returned");
         } catch (SQLException e) {
-            throw new RuntimeException("Error creating stock movement", e);
+            throw new RuntimeException("Error creating stock movement: " + e.getMessage(), e);
         } finally {
             dataSource.closeConnection(conn);
         }

@@ -1,0 +1,515 @@
+{
+  "info": {
+    "name": "Dish Ingredients Management API",
+    "description": "Collection de tests pour l'API de gestion des plats et ingrédients",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Ingredients",
+      "item": [
+        {
+          "name": "GET all ingredients (page 1, size 10)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients?page=1&size=10",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"Laitue\",\n    \"category\": \"VEGETABLE\",\n    \"price\": 800.0\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Tomate\",\n    \"category\": \"VEGETABLE\",\n    \"price\": 600.0\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Poulet\",\n    \"category\": \"ANIMAL\",\n    \"price\": 4500.0\n  },\n  {\n    \"id\": 4,\n    \"name\": \"Chocolat\",\n    \"category\": \"OTHER\",\n    \"price\": 3000.0\n  },\n  {\n    \"id\": 5,\n    \"name\": \"Beurre\",\n    \"category\": \"DAIRY\",\n    \"price\": 2500.0\n  }\n]",
+              "status": "OK",
+              "code": 200
+            }
+          ]
+        },
+        {
+          "name": "GET ingredient by id (existing: 1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/1",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "body": "{\n  \"id\": 1,\n  \"name\": \"Laitue\",\n  \"category\": \"VEGETABLE\",\n  \"price\": 800.0\n}",
+              "status": "OK",
+              "code": 200
+            }
+          ]
+        },
+        {
+          "name": "GET ingredient by id (not existing: 999)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/999",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "999"]
+            }
+          },
+          "response": [
+            {
+              "name": "Not Found",
+              "body": "{\n  \"status\": 404,\n  \"message\": \"Ingredient with id=999 is not found\",\n  \"timestamp\": \"2026-03-31T10:00:00Z\",\n  \"path\": \"/ingredients/999\"\n}",
+              "status": "Not Found",
+              "code": 404
+            }
+          ]
+        },
+        {
+          "name": "GET ingredient stock (existing: 1, at: 2024-01-06T12:00:00Z, unit: KG)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/1/stock?at=2024-01-06T12:00:00Z&unit=KG",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "1", "stock"],
+              "query": [
+                {
+                  "key": "at",
+                  "value": "2024-01-06T12:00:00Z"
+                },
+                {
+                  "key": "unit",
+                  "value": "KG"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "body": "{\n  \"unit\": \"KG\",\n  \"quantity\": 4.8\n}",
+              "status": "OK",
+              "code": 200
+            }
+          ]
+        },
+        {
+          "name": "GET ingredient stock (missing at parameter)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/1/stock?unit=KG",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "1", "stock"],
+              "query": [
+                {
+                  "key": "unit",
+                  "value": "KG"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Bad Request",
+              "body": "{\n  \"status\": 400,\n  \"message\": \"Either mandatory query parameter `at` or `unit` is not provided.\",\n  \"timestamp\": \"2026-03-31T10:00:00Z\",\n  \"path\": \"/ingredients/1/stock\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        },
+        {
+          "name": "GET ingredient stock (invalid date format)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/1/stock?at=2024-01-06&unit=KG",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "1", "stock"],
+              "query": [
+                {
+                  "key": "at",
+                  "value": "2024-01-06"
+                },
+                {
+                  "key": "unit",
+                  "value": "KG"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Bad Request",
+              "body": "{\n  \"status\": 400,\n  \"message\": \"Invalid date format for parameter `at`. Expected ISO-8601 format (e.g., 2024-01-06T12:00:00Z)\",\n  \"timestamp\": \"2026-03-31T10:00:00Z\",\n  \"path\": \"/ingredients/1/stock\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        },
+        {
+          "name": "GET ingredient stock (invalid unit)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/1/stock?at=2024-01-06T12:00:00Z&unit=INVALID",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "1", "stock"],
+              "query": [
+                {
+                  "key": "at",
+                  "value": "2024-01-06T12:00:00Z"
+                },
+                {
+                  "key": "unit",
+                  "value": "INVALID"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Bad Request",
+              "body": "{\n  \"status\": 400,\n  \"message\": \"Invalid unit. Supported units: PCS, KG, L\",\n  \"timestamp\": \"2026-03-31T10:00:00Z\",\n  \"path\": \"/ingredients/1/stock\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        },
+        {
+          "name": "GET stock movements between dates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/1/stockMovements?from=2024-01-05T00:00:00Z&to=2024-01-06T23:59:59Z",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "1", "stockMovements"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2024-01-05T00:00:00Z"
+                },
+                {
+                  "key": "to",
+                  "value": "2024-01-06T23:59:59Z"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "body": "[\n  {\n    \"id\": 1,\n    \"creationDateTime\": \"2024-01-05T08:00:00Z\",\n    \"unit\": \"KG\",\n    \"quantity\": 5.0,\n    \"type\": \"IN\"\n  },\n  {\n    \"id\": 2,\n    \"creationDateTime\": \"2024-01-06T12:00:00Z\",\n    \"unit\": \"KG\",\n    \"quantity\": 0.2,\n    \"type\": \"OUT\"\n  }\n]",
+              "status": "OK",
+              "code": 200
+            }
+          ]
+        },
+        {
+          "name": "GET stock movements (missing from parameter)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ingredients/1/stockMovements?to=2024-01-06T23:59:59Z",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "1", "stockMovements"],
+              "query": [
+                {
+                  "key": "to",
+                  "value": "2024-01-06T23:59:59Z"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Bad Request",
+              "body": "{\n  \"status\": 400,\n  \"message\": \"Query parameter 'from' is required\",\n  \"timestamp\": \"2026-03-31T10:00:00Z\",\n  \"path\": \"/ingredients/1/stockMovements\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        },
+        {
+          "name": "POST add stock movement (IN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"unit\": \"KG\",\n    \"quantity\": 2.5,\n    \"type\": \"IN\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/ingredients/1/stockMovements",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "1", "stockMovements"]
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "body": "[\n  {\n    \"id\": 11,\n    \"creationDateTime\": \"2026-03-31T10:00:00Z\",\n    \"unit\": \"KG\",\n    \"quantity\": 2.5,\n    \"type\": \"IN\"\n  }\n]",
+              "status": "Created",
+              "code": 201
+            }
+          ]
+        },
+        {
+          "name": "POST add multiple stock movements",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"unit\": \"KG\",\n    \"quantity\": 1.0,\n    \"type\": \"IN\"\n  },\n  {\n    \"unit\": \"KG\",\n    \"quantity\": 0.5,\n    \"type\": \"OUT\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/ingredients/2/stockMovements",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "2", "stockMovements"]
+            }
+          },
+          "response": [
+            {
+              "name": "Created",
+              "body": "[\n  {\n    \"id\": 12,\n    \"creationDateTime\": \"2026-03-31T10:00:00Z\",\n    \"unit\": \"KG\",\n    \"quantity\": 1.0,\n    \"type\": \"IN\"\n  },\n  {\n    \"id\": 13,\n    \"creationDateTime\": \"2026-03-31T10:00:00Z\",\n    \"unit\": \"KG\",\n    \"quantity\": 0.5,\n    \"type\": \"OUT\"\n  }\n]",
+              "status": "Created",
+              "code": 201
+            }
+          ]
+        },
+        {
+          "name": "POST add stock movement (invalid - missing unit)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"quantity\": 2.5,\n    \"type\": \"IN\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/ingredients/1/stockMovements",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "1", "stockMovements"]
+            }
+          },
+          "response": [
+            {
+              "name": "Bad Request",
+              "body": "{\n  \"status\": 400,\n  \"message\": \"Invalid stock movement: unit, quantity (>0) and type are required\",\n  \"timestamp\": \"2026-03-31T10:00:00Z\",\n  \"path\": \"/ingredients/1/stockMovements\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        },
+        {
+          "name": "POST add stock movement (ingredient not found)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"unit\": \"KG\",\n    \"quantity\": 2.5,\n    \"type\": \"IN\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/ingredients/999/stockMovements",
+              "host": ["{{base_url}}"],
+              "path": ["ingredients", "999", "stockMovements"]
+            }
+          },
+          "response": [
+            {
+              "name": "Not Found",
+              "body": "{\n  \"status\": 404,\n  \"message\": \"Ingredient with id=999 is not found\",\n  \"timestamp\": \"2026-03-31T10:00:00Z\",\n  \"path\": \"/ingredients/999/stockMovements\"\n}",
+              "status": "Not Found",
+              "code": 404
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dishes",
+      "item": [
+        {
+          "name": "GET all dishes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/dishes",
+              "host": ["{{base_url}}"],
+              "path": ["dishes"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"Salade fraiche\",\n    \"sellingPrice\": 3500.0,\n    \"ingredients\": [\n      {\n        \"id\": 1,\n        \"name\": \"Laitue\",\n        \"category\": \"VEGETABLE\",\n        \"price\": 800.0\n      },\n      {\n        \"id\": 2,\n        \"name\": \"Tomate\",\n        \"category\": \"VEGETABLE\",\n        \"price\": 600.0\n      }\n    ]\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Poulet grille\",\n    \"sellingPrice\": 12000.0,\n    \"ingredients\": [\n      {\n        \"id\": 3,\n        \"name\": \"Poulet\",\n        \"category\": \"ANIMAL\",\n        \"price\": 4500.0\n      }\n    ]\n  },\n  {\n    \"id\": 3,\n    \"name\": \"Riz aux legumes\",\n    \"sellingPrice\": null,\n    \"ingredients\": []\n  },\n  {\n    \"id\": 4,\n    \"name\": \"Gateau au chocolat\",\n    \"sellingPrice\": 8000.0,\n    \"ingredients\": [\n      {\n        \"id\": 4,\n        \"name\": \"Chocolat\",\n        \"category\": \"OTHER\",\n        \"price\": 3000.0\n      },\n      {\n        \"id\": 5,\n        \"name\": \"Beurre\",\n        \"category\": \"DAIRY\",\n        \"price\": 2500.0\n      }\n    ]\n  },\n  {\n    \"id\": 5,\n    \"name\": \"Salade de fruits\",\n    \"sellingPrice\": null,\n    \"ingredients\": []\n  }\n]",
+              "status": "OK",
+              "code": 200
+            }
+          ]
+        },
+        {
+          "name": "PUT update dish ingredients (replace with new list)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"ingredientId\": 1,\n    \"quantity\": 0.30,\n    \"unit\": \"KG\"\n  },\n  {\n    \"ingredientId\": 2,\n    \"quantity\": 0.25,\n    \"unit\": \"KG\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/dishes/1/ingredients",
+              "host": ["{{base_url}}"],
+              "path": ["dishes", "1", "ingredients"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "body": "{\n  \"id\": 1,\n  \"name\": \"Salade fraiche\",\n  \"sellingPrice\": 3500.0,\n  \"ingredients\": [\n    {\n      \"id\": 1,\n      \"name\": \"Laitue\",\n      \"category\": \"VEGETABLE\",\n      \"price\": 800.0\n    },\n    {\n      \"id\": 2,\n      \"name\": \"Tomate\",\n      \"category\": \"VEGETABLE\",\n      \"price\": 600.0\n    }\n  ]\n}",
+              "status": "OK",
+              "code": 200
+            }
+          ]
+        },
+        {
+          "name": "PUT update dish ingredients (empty list - remove all)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[]"
+            },
+            "url": {
+              "raw": "{{base_url}}/dishes/1/ingredients",
+              "host": ["{{base_url}}"],
+              "path": ["dishes", "1", "ingredients"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "body": "{\n  \"id\": 1,\n  \"name\": \"Salade fraiche\",\n  \"sellingPrice\": 3500.0,\n  \"ingredients\": []\n}",
+              "status": "OK",
+              "code": 200
+            }
+          ]
+        },
+        {
+          "name": "PUT update dish ingredients (dish not found)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"ingredientId\": 1,\n    \"quantity\": 0.30,\n    \"unit\": \"KG\"\n  }\n]"
+            },
+            "url": {
+              "raw": "{{base_url}}/dishes/999/ingredients",
+              "host": ["{{base_url}}"],
+              "path": ["dishes", "999", "ingredients"]
+            }
+          },
+          "response": [
+            {
+              "name": "Not Found",
+              "body": "{\n  \"status\": 404,\n  \"message\": \"Dish with id=999 is not found\",\n  \"timestamp\": \"2026-03-31T10:00:00Z\",\n  \"path\": \"/dishes/999/ingredients\"\n}",
+              "status": "Not Found",
+              "code": 404
+            }
+          ]
+        },
+        {
+          "name": "PUT update dish ingredients (empty body)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{base_url}}/dishes/1/ingredients",
+              "host": ["{{base_url}}"],
+              "path": ["dishes", "1", "ingredients"]
+            }
+          },
+          "response": [
+            {
+              "name": "Bad Request",
+              "body": "{\n  \"status\": 400,\n  \"message\": \"Request body must not be empty\",\n  \"timestamp\": \"2026-03-31T10:00:00Z\",\n  \"path\": \"/dishes/1/ingredients\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ]
+}
