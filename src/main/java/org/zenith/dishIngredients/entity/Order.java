@@ -1,28 +1,21 @@
 package org.zenith.dishIngredients.entity;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Order {
     private final int id;
     private final String reference;
     private final Instant creationDateTime;
-    private List<DishOrder> dishOrders;
-    private TableOrder tableOrder;
+    private final List<DishOrder> dishOrders;
+    private final TableOrder tableOrder;
 
-    public Order(int id, String reference, Instant creationDateTime,
-                 List<DishOrder> dishOrders, TableOrder tableOrder) {
+    public Order(int id, String reference, Instant creationDateTime, List<DishOrder> dishOrders, TableOrder tableOrder) {
         this.id = id;
         this.reference = reference;
         this.creationDateTime = creationDateTime;
-        this.dishOrders = dishOrders != null ? new ArrayList<>(dishOrders) : new ArrayList<>();
+        this.dishOrders = dishOrders;
         this.tableOrder = tableOrder;
-    }
-
-    public Order(int id, String reference, Instant creationDateTime, List<DishOrder> dishOrders) {
-        this(id, reference, creationDateTime, dishOrders, null);
     }
 
     public int getId() {
@@ -41,19 +34,26 @@ public class Order {
         return dishOrders;
     }
 
-    public void setDishOrders(List<DishOrder> dishOrders) {
-        this.dishOrders.clear();
-        if (dishOrders != null) {
-            this.dishOrders.addAll(dishOrders);
-        }
+    public Double getTotalAmountWithoutVAT() {
+        return dishOrders.stream()
+                .mapToDouble(
+                        dishOrder -> {
+                            Dish dish = dishOrder.getDish();
+                            Double price = dish.getPrice();
+                            if (price == null) {
+                                throw new IllegalStateException("Price not set for dish " + dish.getName());
+                            }
+                            return price * dishOrder.getQuantity();
+                        })
+                .sum();
+    }
+
+    public Double getTotalAmountWithVAT() {
+        return getTotalAmountWithoutVAT() * 1.2;
     }
 
     public TableOrder getTableOrder() {
         return tableOrder;
-    }
-
-    public void setTableOrder(TableOrder tableOrder) {
-        this.tableOrder = tableOrder;
     }
 
     public Instant getArrivalDateTime() {
@@ -66,46 +66,5 @@ public class Order {
 
     public Table getTable() {
         return tableOrder != null ? tableOrder.getTable() : null;
-    }
-
-    public Double getTotalAmountWithoutVAT() {
-        if (dishOrders == null || dishOrders.isEmpty()) {
-            return 0.0;
-        }
-
-        return dishOrders.stream()
-                .mapToDouble(dishOrder -> {
-                    Dish dish = dishOrder.getDish();
-                    Double price = dish.getSellingPrice();
-                    if (price == null) {
-                        throw new IllegalStateException("Selling price not set for dish: " + dish.getName());
-                    }
-                    return price * dishOrder.getQuantity();
-                })
-                .sum();
-    }
-
-    public Double getTotalAmountWithVAT() {
-        return getTotalAmountWithoutVAT() * 1.2;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Order order)) return false;
-        return id == order.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Order{id=" + id +
-                ", reference='" + reference + '\'' +
-                ", creationDateTime=" + creationDateTime +
-                ", tableOrder=" + tableOrder + "}";
     }
 }

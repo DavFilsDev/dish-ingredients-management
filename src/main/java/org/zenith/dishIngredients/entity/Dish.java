@@ -8,14 +8,14 @@ public class Dish {
     private final int id;
     private final String name;
     private final DishTypeEnum dishType;
-    private Double sellingPrice;
-    private List<DishIngredient> dishIngredients;
+    private Double price;
+    private final List<DishIngredient> dishIngredients;
 
-    public Dish(int id, String name, DishTypeEnum dishType, Double sellingPrice) {
+    public Dish(int id, String name, DishTypeEnum dishType, Double price) {
         this.id = id;
         this.name = name;
         this.dishType = dishType;
-        this.sellingPrice = sellingPrice;
+        this.price = price;
         this.dishIngredients = new ArrayList<>();
     }
 
@@ -35,12 +35,36 @@ public class Dish {
         return dishType;
     }
 
-    public Double getSellingPrice() {
-        return sellingPrice;
+    public Double getPrice() {
+        return price;
     }
 
-    public void setSellingPrice(Double sellingPrice) {
-        this.sellingPrice = sellingPrice;
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public List<Ingredient> getIngredients() {
+        List<Ingredient> result = new ArrayList<>();
+        for (DishIngredient di : dishIngredients) {
+            Ingredient ingredient = di.getIngredient();
+            ingredient.setQuantity(di.getQuantity());
+            result.add(ingredient);
+        }
+        return result;
+    }
+
+    public void setIngredients(List<Ingredient> ingredients) {
+        this.dishIngredients.clear();
+        if (ingredients == null) {
+            return;
+        }
+        for (Ingredient ingredient : ingredients) {
+            if (ingredient == null) {
+                continue;
+            }
+            double quantity = ingredient.getQuantity() == null ? 1.0 : ingredient.getQuantity();
+            this.dishIngredients.add(new DishIngredient(this, ingredient, quantity, Unit.KG));
+        }
     }
 
     public List<DishIngredient> getDishIngredients() {
@@ -49,46 +73,55 @@ public class Dish {
 
     public void setDishIngredients(List<DishIngredient> dishIngredients) {
         this.dishIngredients.clear();
-        if (dishIngredients != null) {
-            this.dishIngredients.addAll(dishIngredients);
+        if (dishIngredients == null) {
+            return;
         }
-    }
-
-    public List<Ingredient> getIngredients() {
-        List<Ingredient> ingredients = new ArrayList<>();
         for (DishIngredient di : dishIngredients) {
-            Ingredient ingredient = di.getIngredient();
-            ingredient.setQuantity(di.getQuantity());
-            ingredients.add(ingredient);
+            if (di == null) {
+                continue;
+            }
+            this.dishIngredients.add(
+                    new DishIngredient(this, di.getIngredient(), di.getQuantity(), di.getUnit()));
         }
-        return ingredients;
     }
 
     public void addIngredient(Ingredient ingredient) {
         if (ingredient != null) {
-            this.dishIngredients.add(new DishIngredient(this, ingredient, 1.0, Unit.KG));
-        }
-    }
-
-    public void addIngredient(Ingredient ingredient, double quantity, Unit unit) {
-        if (ingredient != null) {
-            this.dishIngredients.add(new DishIngredient(this, ingredient, quantity, unit));
+            double quantity = ingredient.getQuantity() == null ? 1.0 : ingredient.getQuantity();
+            this.dishIngredients.add(new DishIngredient(this, ingredient, quantity, Unit.KG));
         }
     }
 
     public Double getDishCost() {
-        double total = 0.0;
+        double totalPrice = 0;
         for (DishIngredient di : dishIngredients) {
-            total += di.getIngredient().getPrice() * di.getQuantity();
+            totalPrice += di.getIngredient().getPrice() * di.getQuantity();
         }
-        return total;
+        return totalPrice;
     }
 
     public Double getGrossMargin() {
-        if (sellingPrice == null) {
-            throw new IllegalStateException("Selling price not set for dish: " + name);
+        if (price == null) {
+            throw new IllegalStateException("Price not found, not possible to calculate margin.");
         }
-        return sellingPrice - getDishCost();
+        return price - getDishCost();
+    }
+
+    @Override
+    public String toString() {
+        return "Dish{"
+                + "id="
+                + id
+                + ", name='"
+                + name
+                + '\''
+                + ", dishType="
+                + dishType
+                + ", price="
+                + price
+                + ", dishIngredients="
+                + dishIngredients
+                + '}';
     }
 
     @Override
@@ -101,10 +134,5 @@ public class Dish {
     @Override
     public int hashCode() {
         return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Dish{id=" + id + ", name='" + name + "', dishType=" + dishType + ", sellingPrice=" + sellingPrice + "}";
     }
 }

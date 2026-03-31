@@ -28,11 +28,4 @@ public class DishIngredient {
     public Unit getUnit() {
         return unit;
     }
-
-    @Override
-    public String toString() {
-        return "DishIngredient{dish=" + dish.getName() +
-                ", ingredient=" + ingredient.getName() +
-                ", quantity=" + quantity + " " + unit + "}";
-    }
 }

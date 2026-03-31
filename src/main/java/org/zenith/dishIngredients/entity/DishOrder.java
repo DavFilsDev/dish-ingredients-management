@@ -1,7 +1,5 @@
 package org.zenith.dishIngredients.entity;
 
-import java.util.Objects;
-
 public class DishOrder {
     private final int id;
     private final Dish dish;
@@ -23,24 +21,5 @@ public class DishOrder {
 
     public int getQuantity() {
         return quantity;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DishOrder that)) return false;
-        return id == that.id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "DishOrder{id=" + id +
-                ", dish=" + dish.getName() +
-                ", quantity=" + quantity + "}";
     }
 }

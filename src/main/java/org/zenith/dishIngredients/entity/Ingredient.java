@@ -96,20 +96,34 @@ public class Ingredient {
 
         return new StockValue(totalQuantity, unit);
     }
+
+    @Override
+    public String toString() {
+        return "Ingredient{"
+                + "id="
+                + id
+                + ", name='"
+                + name
+                + '\''
+                + ", price="
+                + price
+                + ", category="
+                + category
+                + '}';
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Ingredient that)) return false;
-        return id == that.id;
+        return id == that.id
+                && Double.compare(that.price, price) == 0
+                && Objects.equals(name, that.name)
+                && category == that.category;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Ingredient{id=" + id + ", name='" + name + "', price=" + price + ", category=" + category + "}";
+        return Objects.hash(id, name, price, category);
     }
 }

@@ -2,56 +2,77 @@ package org.zenith.dishIngredients.dto;
 
 import org.zenith.dishIngredients.entity.Dish;
 import org.zenith.dishIngredients.entity.DishIngredient;
-import org.zenith.dishIngredients.entity.DishTypeEnum;
+import org.zenith.dishIngredients.entity.Ingredient;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 
 public class DishResponseDTO {
-    private final int id;
-    private final String name;
-    private final DishTypeEnum dishType;
-    private final Double sellingPrice;
-    private final List<IngredientResponseDTO> ingredients;
 
-    public DishResponseDTO(Dish dish) {
-        this.id = dish.getId();
-        this.name = dish.getName();
-        this.dishType = dish.getDishType();
-        this.sellingPrice = dish.getSellingPrice();
+    private int id;
+    private String name;
+    private Double sellingPrice;
+    private List<IngredientResponseDTO> ingredients;
 
-        this.ingredients = dish.getDishIngredients().stream()
-                .map(DishIngredient::getIngredient)
-                .map(IngredientResponseDTO::new)
-                .collect(Collectors.toList());
+    public DishResponseDTO() {
+        this.ingredients = new ArrayList<>();
     }
 
-    public DishResponseDTO(Dish dish, List<IngredientResponseDTO> ingredients) {
-        this.id = dish.getId();
-        this.name = dish.getName();
-        this.dishType = dish.getDishType();
-        this.sellingPrice = dish.getSellingPrice();
+    public DishResponseDTO(int id, String name, Double sellingPrice, List<IngredientResponseDTO> ingredients) {
+        this.id = id;
+        this.name = name;
+        this.sellingPrice = sellingPrice;
         this.ingredients = ingredients;
     }
 
-    // Getters
+    public static DishResponseDTO fromEntity(Dish dish, List<DishIngredient> dishIngredients) {
+        List<IngredientResponseDTO> ingredientDTOs = new ArrayList<>();
+
+        for (DishIngredient di : dishIngredients) {
+            Ingredient ingredient = di.getIngredient();
+
+            IngredientResponseDTO ingredientDTO = IngredientResponseDTO.fromEntity(ingredient);
+            ingredientDTOs.add(ingredientDTO);
+        }
+
+        return new DishResponseDTO(
+                dish.getId(),
+                dish.getName(),
+                dish.getPrice(),
+                ingredientDTOs
+        );
+    }
+
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public DishTypeEnum getDishType() {
-        return dishType;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Double getSellingPrice() {
         return sellingPrice;
     }
 
+    public void setSellingPrice(Double sellingPrice) {
+        this.sellingPrice = sellingPrice;
+    }
+
     public List<IngredientResponseDTO> getIngredients() {
         return ingredients;
+    }
+
+    public void setIngredients(List<IngredientResponseDTO> ingredients) {
+        this.ingredients = ingredients;
     }
 }

@@ -1,115 +1,91 @@
 package org.zenith.dishIngredients.controller;
 
+import org.zenith.dishIngredients.dto.IngredientResponseDTO;
+import org.zenith.dishIngredients.dto.IngredientStockResponseDTO;
+import org.zenith.dishIngredients.dto.StockMovementRequestDTO;
+import org.zenith.dishIngredients.dto.StockMovementResponseDTO;
+import org.zenith.dishIngredients.entity.Unit;
+import org.zenith.dishIngredients.service.IngredientService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.zenith.dishIngredients.dto.IngredientResponseDTO;
-import org.zenith.dishIngredients.dto.StockMovementRequestDTO;
-import org.zenith.dishIngredients.dto.StockMovementResponseDTO;
-import org.zenith.dishIngredients.dto.StockValueResponseDTO;
-import org.zenith.dishIngredients.entity.Ingredient;
-import org.zenith.dishIngredients.entity.StockMouvement;
-import org.zenith.dishIngredients.entity.StockValue;
-import org.zenith.dishIngredients.entity.Unit;
-import org.zenith.dishIngredients.repository.IngredientRepository;
-import org.zenith.dishIngredients.service.StockService;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ingredients")
 public class IngredientController {
 
-    private final IngredientRepository ingredientRepository;
-    private final StockService stockService;
+    private final IngredientService ingredientService;
 
-    public IngredientController(IngredientRepository ingredientRepository,
-                                StockService stockService) {
-        this.ingredientRepository = ingredientRepository;
-        this.stockService = stockService;
+    public IngredientController(IngredientService ingredientService) {
+        this.ingredientService = ingredientService;
     }
 
     @GetMapping
-    public ResponseEntity<List<IngredientResponseDTO>> getAllIngredients() {
-        List<Ingredient> ingredients = ingredientRepository.findAll();
-        List<IngredientResponseDTO> response = ingredients.stream()
-                .map(IngredientResponseDTO::new)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<IngredientResponseDTO>> getIngredients(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        if (page < 1) {
+            page = 1;
+        }
+        if (size < 1) {
+            size = 10;
+        }
+
+        List<IngredientResponseDTO> ingredients = ingredientService.getAllIngredients(page, size);
+        return ResponseEntity.ok(ingredients);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<IngredientResponseDTO> getIngredientById(@PathVariable int id) {
-        try {
-            Ingredient ingredient = ingredientRepository.findById(id);
-            return ResponseEntity.ok(new IngredientResponseDTO(ingredient));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        IngredientResponseDTO ingredient = ingredientService.getIngredientById(id);
+        return ResponseEntity.ok(ingredient);
     }
 
     @GetMapping("/{id}/stock")
-    public ResponseEntity<?> getStockValue(
+    public ResponseEntity<IngredientStockResponseDTO> getIngredientStock(
             @PathVariable int id,
             @RequestParam String at,
             @RequestParam String unit) {
 
         if (at == null || at.isBlank()) {
-            return ResponseEntity.badRequest().body("Missing mandatory query parameter 'at'");
+            throw new IllegalArgumentException("Either mandatory query parameter `at` or `unit` is not provided.");
         }
         if (unit == null || unit.isBlank()) {
-            return ResponseEntity.badRequest().body("Missing mandatory query parameter 'unit'");
-        }
-
-        Unit targetUnit;
-        try {
-            targetUnit = Unit.valueOf(unit.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("Invalid unit. Must be one of: PCS, KG, L");
-        }
-
-        try {
-            ingredientRepository.findById(id);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Ingredient.id=" + id + " is not found");
+            throw new IllegalArgumentException("Either mandatory query parameter `at` or `unit` is not provided.");
         }
 
         Instant instant;
         try {
             instant = Instant.parse(at);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Invalid date format. Use ISO-8601 format (ex: 2024-01-06T12:00:00Z)");
+            throw new IllegalArgumentException("Invalid date format for parameter `at`. Expected ISO-8601 format (e.g., 2024-01-06T12:00:00Z)");
         }
 
-        StockValue stockValue = stockService.getStockValueAt(id, instant, targetUnit);
-        StockValueResponseDTO response = new StockValueResponseDTO(stockValue);
+        Unit unitEnum;
+        try {
+            unitEnum = Unit.valueOf(unit.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid unit. Supported units: PCS, KG, L");
+        }
 
-        return ResponseEntity.ok(response);
+        IngredientStockResponseDTO stock = ingredientService.getIngredientStock(id, instant, unitEnum);
+        return ResponseEntity.ok(stock);
     }
 
     @GetMapping("/{id}/stockMovements")
-    public ResponseEntity<?> getStockMovements(
+    public ResponseEntity<List<StockMovementResponseDTO>> getStockMovements(
             @PathVariable int id,
             @RequestParam String from,
             @RequestParam String to) {
 
         if (from == null || from.isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body("Missing mandatory query parameter 'from'");
+            throw new IllegalArgumentException("Query parameter 'from' is required");
         }
         if (to == null || to.isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body("Missing mandatory query parameter 'to'");
-        }
-
-        try {
-            ingredientRepository.findById(id);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Ingredient.id=" + id + " is not found");
+            throw new IllegalArgumentException("Query parameter 'to' is required");
         }
 
         Instant fromInstant;
@@ -118,55 +94,23 @@ public class IngredientController {
             fromInstant = Instant.parse(from);
             toInstant = Instant.parse(to);
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body("Invalid date format. Use ISO-8601 format (ex: 2024-01-06T12:00:00Z)");
+            throw new IllegalArgumentException("Invalid date format. Expected ISO-8601 format (e.g., 2024-01-06T12:00:00Z)");
         }
 
-        if (fromInstant.isAfter(toInstant)) {
-            return ResponseEntity.badRequest()
-                    .body("'from' date must be before or equal to 'to' date");
-        }
-
-        List<StockMouvement> movements = stockService.getStockMovements(id, fromInstant, toInstant);
-        List<StockMovementResponseDTO> response = movements.stream()
-                .map(StockMovementResponseDTO::new)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(response);
+        List<StockMovementResponseDTO> movements = ingredientService.getStockMovementsBetweenDates(id, fromInstant, toInstant);
+        return ResponseEntity.ok(movements);
     }
 
     @PostMapping("/{id}/stockMovements")
-    public ResponseEntity<?> addStockMovements(
+    public ResponseEntity<List<StockMovementResponseDTO>> addStockMovements(
             @PathVariable int id,
-            @RequestBody List<StockMovementRequestDTO> request) {
+            @RequestBody List<StockMovementRequestDTO> movements) {
 
-        if (request == null || request.isEmpty()) {
-            return ResponseEntity.badRequest()
-                    .body("Request body is required and must not be empty");
+        if (movements == null) {
+            throw new IllegalArgumentException("Request body must not be empty");
         }
 
-        try {
-            ingredientRepository.findById(id);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Ingredient.id=" + id + " is not found");
-        }
-
-        for (StockMovementRequestDTO dto : request) {
-            if (!dto.isValid()) {
-                return ResponseEntity.badRequest()
-                        .body("Invalid movement: quantity must be > 0, unit and type are required");
-            }
-        }
-
-        List<StockMouvement> movements = stockService.convertToStockMovements(request);
-
-        List<StockMouvement> savedMovements = stockService.addStockMovements(id, movements);
-
-        List<StockMovementResponseDTO> response = savedMovements.stream()
-                .map(StockMovementResponseDTO::new)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        List<StockMovementResponseDTO> createdMovements = ingredientService.addStockMovements(id, movements);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdMovements);
     }
 }
