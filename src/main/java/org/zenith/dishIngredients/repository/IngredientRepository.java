@@ -12,6 +12,7 @@ import org.zenith.dishIngredients.entity.MouvementTypeEnum;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -219,5 +220,88 @@ public class IngredientRepository {
 
         Double total = jdbcTemplate.queryForObject(sql, Double.class, ingredientId, at);
         return total != null ? total : 0.0;
+    }
+
+    public List<StockMouvement> findStockMovementsByIngredientId(int ingredientId, Instant from, Instant to) {
+        StringBuilder sql = new StringBuilder("""
+            SELECT id, quantity, type, unit, creation_datetime
+            FROM stock_movement
+            WHERE id_ingredient = ?
+        """);
+
+        List<Object> params = new ArrayList<>();
+        params.add(ingredientId);
+
+        if (from != null) {
+            sql.append(" AND creation_datetime >= ?");
+            params.add(Timestamp.from(from));
+        }
+
+        if (to != null) {
+            sql.append(" AND creation_datetime <= ?");
+            params.add(Timestamp.from(to));
+        }
+
+        sql.append(" ORDER BY creation_datetime ASC");
+
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
+            StockValue value = new StockValue(
+                    rs.getDouble("quantity"),
+                    Unit.valueOf(rs.getString("unit"))
+            );
+            return new StockMouvement(
+                    rs.getInt("id"),
+                    value,
+                    MouvementTypeEnum.valueOf(rs.getString("type")),
+                    rs.getTimestamp("creation_datetime").toInstant()
+            );
+        }, params.toArray());
+    }
+
+    public List<StockMouvement> saveStockMovements(int ingredientId, List<StockMouvement> movements) {
+        if (movements == null || movements.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String sql = """
+            INSERT INTO stock_movement (id_ingredient, quantity, type, unit, creation_datetime)
+            VALUES (?, ?, ?::movement_type, ?::unit_type, ?)
+            RETURNING id, quantity, type, unit, creation_datetime
+        """;
+
+        List<StockMouvement> savedMovements = new ArrayList<>();
+
+        for (StockMouvement movement : movements) {
+            StockValue value = movement.getValue();
+            Instant creationDateTime = movement.getCreationDateTime() != null
+                    ? movement.getCreationDateTime()
+                    : Instant.now();
+
+            List<StockMouvement> result = jdbcTemplate.query(sql,
+                    (rs, rowNum) -> {
+                        StockValue savedValue = new StockValue(
+                                rs.getDouble("quantity"),
+                                Unit.valueOf(rs.getString("unit"))
+                        );
+                        return new StockMouvement(
+                                rs.getInt("id"),
+                                savedValue,
+                                MouvementTypeEnum.valueOf(rs.getString("type")),
+                                rs.getTimestamp("creation_datetime").toInstant()
+                        );
+                    },
+                    ingredientId,
+                    value.getQuantity(),
+                    movement.getType().name(),
+                    value.getUnit().name(),
+                    Timestamp.from(creationDateTime)
+            );
+
+            if (!result.isEmpty()) {
+                savedMovements.add(result.get(0));
+            }
+        }
+
+        return savedMovements;
     }
 }

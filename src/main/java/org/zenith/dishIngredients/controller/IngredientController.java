@@ -4,8 +4,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.zenith.dishIngredients.dto.IngredientResponseDTO;
+import org.zenith.dishIngredients.dto.StockMovementRequestDTO;
+import org.zenith.dishIngredients.dto.StockMovementResponseDTO;
 import org.zenith.dishIngredients.dto.StockValueResponseDTO;
 import org.zenith.dishIngredients.entity.Ingredient;
+import org.zenith.dishIngredients.entity.StockMouvement;
 import org.zenith.dishIngredients.entity.StockValue;
 import org.zenith.dishIngredients.entity.Unit;
 import org.zenith.dishIngredients.repository.IngredientRepository;
@@ -85,5 +88,85 @@ public class IngredientController {
         StockValueResponseDTO response = new StockValueResponseDTO(stockValue);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/stockMovements")
+    public ResponseEntity<?> getStockMovements(
+            @PathVariable int id,
+            @RequestParam String from,
+            @RequestParam String to) {
+
+        if (from == null || from.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body("Missing mandatory query parameter 'from'");
+        }
+        if (to == null || to.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body("Missing mandatory query parameter 'to'");
+        }
+
+        try {
+            ingredientRepository.findById(id);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Ingredient.id=" + id + " is not found");
+        }
+
+        Instant fromInstant;
+        Instant toInstant;
+        try {
+            fromInstant = Instant.parse(from);
+            toInstant = Instant.parse(to);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body("Invalid date format. Use ISO-8601 format (ex: 2024-01-06T12:00:00Z)");
+        }
+
+        if (fromInstant.isAfter(toInstant)) {
+            return ResponseEntity.badRequest()
+                    .body("'from' date must be before or equal to 'to' date");
+        }
+
+        List<StockMouvement> movements = stockService.getStockMovements(id, fromInstant, toInstant);
+        List<StockMovementResponseDTO> response = movements.stream()
+                .map(StockMovementResponseDTO::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/stockMovements")
+    public ResponseEntity<?> addStockMovements(
+            @PathVariable int id,
+            @RequestBody List<StockMovementRequestDTO> request) {
+
+        if (request == null || request.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("Request body is required and must not be empty");
+        }
+
+        try {
+            ingredientRepository.findById(id);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Ingredient.id=" + id + " is not found");
+        }
+
+        for (StockMovementRequestDTO dto : request) {
+            if (!dto.isValid()) {
+                return ResponseEntity.badRequest()
+                        .body("Invalid movement: quantity must be > 0, unit and type are required");
+            }
+        }
+
+        List<StockMouvement> movements = stockService.convertToStockMovements(request);
+
+        List<StockMouvement> savedMovements = stockService.addStockMovements(id, movements);
+
+        List<StockMovementResponseDTO> response = savedMovements.stream()
+                .map(StockMovementResponseDTO::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

@@ -1,11 +1,13 @@
 package org.zenith.dishIngredients.service;
 
 import org.springframework.stereotype.Service;
+import org.zenith.dishIngredients.dto.StockMovementRequestDTO;
 import org.zenith.dishIngredients.entity.*;
 import org.zenith.dishIngredients.repository.DishRepository;
 import org.zenith.dishIngredients.repository.IngredientRepository;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -105,5 +107,56 @@ public class StockService {
     public double getAvailableStockInKg(int ingredientId, Instant at) {
         Ingredient ingredient = ingredientRepository.findByIdWithStockMovements(ingredientId);
         return ingredient.getStockValueAt(at).getQuantity();
+    }
+
+    public List<StockMouvement> getStockMovements(int ingredientId, Instant from, Instant to) {
+        ingredientRepository.findById(ingredientId);
+
+        return ingredientRepository.findStockMovementsByIngredientId(ingredientId, from, to);
+    }
+
+    public List<StockMouvement> addStockMovements(int ingredientId, List<StockMouvement> movements) {
+        ingredientRepository.findById(ingredientId);
+
+        if (movements == null || movements.isEmpty()) {
+            throw new IllegalArgumentException("Stock movements list cannot be null or empty");
+        }
+
+        for (StockMouvement movement : movements) {
+            StockValue value = movement.getValue();
+            if (value == null) {
+                throw new IllegalArgumentException("Stock value cannot be null");
+            }
+            if (value.getQuantity() <= 0) {
+                throw new IllegalArgumentException("Quantity must be positive");
+            }
+            if (value.getUnit() == null) {
+                throw new IllegalArgumentException("Unit cannot be null");
+            }
+            if (movement.getType() == null) {
+                throw new IllegalArgumentException("Movement type cannot be null");
+            }
+        }
+
+        return ingredientRepository.saveStockMovements(ingredientId, movements);
+    }
+
+    public List<StockMouvement> convertToStockMovements(List<StockMovementRequestDTO> requestDTOs) {
+        if (requestDTOs == null || requestDTOs.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<StockMouvement> movements = new ArrayList<>();
+        for (StockMovementRequestDTO dto : requestDTOs) {
+            StockValue value = new StockValue(dto.getQuantity(), dto.getUnit());
+            StockMouvement movement = new StockMouvement(
+                    0,
+                    value,
+                    dto.getType(),
+                    null
+            );
+            movements.add(movement);
+        }
+        return movements;
     }
 }
