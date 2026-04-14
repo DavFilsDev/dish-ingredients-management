@@ -259,6 +259,94 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /dishes/{id}/ingredients:
+    put:
+      summary: Update the ingredient list of a dish
+      description: |
+        Modifies (attaches or detaches) the list of ingredients for the dish with the given ID.
+        The request body must contain a list of JSON objects representing the ingredients to attach or detach.
+        The request body is mandatory, otherwise a 400 status code is returned with an explicit message.
+
+        If some ingredients provided in the request body do not exist in the database, these new elements are simply ignored.
+        This endpoint only attaches or detaches ingredients, it does not modify ingredient information.
+      operationId: updateDishIngredients
+      tags:
+        - Dishes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier of the dish
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        required: true
+        description: List of ingredients to attach to the dish
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/DishIngredientRequest'
+            example:
+              - ingredientId: 1
+                quantity: 0.30
+                unit: "KG"
+              - ingredientId: 2
+                quantity: 0.25
+                unit: "KG"
+      responses:
+        '200':
+          description: Successfully updated the dish ingredients
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DishResponse'
+              example:
+                id: 1
+                name: "Salade fraiche"
+                sellingPrice: 3500.00
+                ingredients:
+                  - id: 1
+                    name: "Laitue"
+                    category: "VEGETABLE"
+                    price: 800.00
+                  - id: 2
+                    name: "Tomate"
+                    category: "VEGETABLE"
+                    price: 600.00
+        '400':
+          description: |
+            Request body is empty or missing.
+            Also returned when the request body is invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 400
+                message: "Request body must not be empty"
+                timestamp: "2026-04-14T10:00:00Z"
+                path: "/dishes/1/ingredients"
+        '404':
+          description: Dish not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 404
+                message: "Dish.id=999 is not found"
+                timestamp: "2026-04-14T10:00:00Z"
+                path: "/dishes/999/ingredients"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     IngredientResponse:
@@ -360,3 +448,28 @@ components:
           description: List of ingredients that compose the dish
           items:
             $ref: '#/components/schemas/IngredientResponse'
+
+    DishIngredientRequest:
+      type: object
+      required:
+        - ingredientId
+        - quantity
+        - unit
+      properties:
+        ingredientId:
+          type: integer
+          description: Unique identifier of the ingredient to attach
+          example: 1
+        quantity:
+          type: number
+          format: double
+          description: Quantity of the ingredient required for the dish
+          example: 0.30
+        unit:
+          type: string
+          description: Unit of the quantity (PCS, KG, L)
+          enum:
+            - PCS
+            - KG
+            - L
+          example: "KG"
