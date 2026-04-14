@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: Dish Ingredients Management API
+  description: API for managing dishes, ingredients, and stock in a restaurant
+  version: 1.0.0
+  contact:
+    name: F. Miharisoa David Fils RATIANDRAIBE
+    email: miharisoadavidfils@gmail.com
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+
+paths:
+  /ingredients:
+    get:
+      summary: Get all ingredients
+      description: |
+        Returns a list of JSON objects representing all ingredients, containing:
+        - id
+        - name
+        - category
+        - price
+        The returned objects are those stored in the database.
+      operationId: getAllIngredients
+      tags:
+        - Ingredients
+      responses:
+        '200':
+          description: Successfully retrieved the list of ingredients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/IngredientResponse'
+              example:
+                - id: 1
+                  name: "Laitue"
+                  category: "VEGETABLE"
+                  price: 800.00
+                - id: 2
+                  name: "Tomate"
+                  category: "VEGETABLE"
+                  price: 600.00
+                - id: 3
+                  name: "Poulet"
+                  category: "ANIMAL"
+                  price: 4500.00
+                - id: 4
+                  name: "Chocolat"
+                  category: "OTHER"
+                  price: 3000.00
+                - id: 5
+                  name: "Beurre"
+                  category: "DAIRY"
+                  price: 2500.00
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    IngredientResponse:
+      type: object
+      required:
+        - id
+        - name
+        - category
+        - price
+      properties:
+        id:
+          type: integer
+          description: Unique identifier of the ingredient
+          example: 1
+        name:
+          type: string
+          description: Name of the ingredient
+          example: "Laitue"
+        category:
+          type: string
+          description: Category of the ingredient
+          enum:
+            - VEGETABLE
+            - ANIMAL
+            - MARINE
+            - DAIRY
+            - OTHER
+          example: "VEGETABLE"
+        price:
+          type: number
+          format: double
+          description: Price of the ingredient
+          example: 800.00
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code
+          example: 404
+        message:
+          type: string
+          description: Error message
+          example: "Resource not found"
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the error
+          example: "2026-04-14T10:00:00Z"
+        path:
+          type: string
+          description: Request path that caused the error
+          example: "/ingredients/999"
