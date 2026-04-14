@@ -188,6 +188,77 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /dishes:
+    get:
+      summary: Get all dishes with their ingredients
+      description: |
+        Returns a list of JSON objects representing all dishes, containing:
+        - id
+        - name
+        - selling price
+        - list of ingredients that compose the dish
+        Each ingredient contains: id, name, category, and price
+        The returned objects are those stored in the database.
+      operationId: getAllDishes
+      tags:
+        - Dishes
+      responses:
+        '200':
+          description: Successfully retrieved the list of dishes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DishResponse'
+              example:
+                - id: 1
+                  name: "Salade fraiche"
+                  sellingPrice: 3500.00
+                  ingredients:
+                    - id: 1
+                      name: "Laitue"
+                      category: "VEGETABLE"
+                      price: 800.00
+                    - id: 2
+                      name: "Tomate"
+                      category: "VEGETABLE"
+                      price: 600.00
+                - id: 2
+                  name: "Poulet grille"
+                  sellingPrice: 12000.00
+                  ingredients:
+                    - id: 3
+                      name: "Poulet"
+                      category: "ANIMAL"
+                      price: 4500.00
+                - id: 3
+                  name: "Riz aux legumes"
+                  sellingPrice: null
+                  ingredients: [ ]
+                - id: 4
+                  name: "Gateau au chocolat"
+                  sellingPrice: 8000.00
+                  ingredients:
+                    - id: 4
+                      name: "Chocolat"
+                      category: "OTHER"
+                      price: 3000.00
+                    - id: 5
+                      name: "Beurre"
+                      category: "DAIRY"
+                      price: 2500.00
+                - id: 5
+                  name: "Salade de fruits"
+                  sellingPrice: null
+                  ingredients: [ ]
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     IngredientResponse:
@@ -262,3 +333,30 @@ components:
           format: double
           description: Stock quantity
           example: 4.8
+
+    DishResponse:
+      type: object
+      required:
+        - id
+        - name
+        - ingredients
+      properties:
+        id:
+          type: integer
+          description: Unique identifier of the dish
+          example: 1
+        name:
+          type: string
+          description: Name of the dish
+          example: "Salade fraiche"
+        sellingPrice:
+          type: number
+          format: double
+          nullable: true
+          description: Selling price of the dish (can be null)
+          example: 3500.00
+        ingredients:
+          type: array
+          description: List of ingredients that compose the dish
+          items:
+            $ref: '#/components/schemas/IngredientResponse'
