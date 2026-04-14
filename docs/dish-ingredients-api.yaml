@@ -111,6 +111,82 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /ingredients/{id}/stock:
+    get:
+      summary: Get ingredient stock value at a specific time
+      description: |
+        Returns a JSON object representing the stock value of the ingredient at a given moment, containing:
+        - unit (PCS, KG, L)
+        - stock quantity (decimal number)
+        The query parameters 'at' and 'unit' are mandatory.
+      operationId: getIngredientStock
+      tags:
+        - Ingredients
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier of the ingredient
+          schema:
+            type: integer
+          example: 1
+        - name: at
+          in: query
+          required: true
+          description: Moment at which to calculate the stock (ISO-8601 format)
+          schema:
+            type: string
+            format: date-time
+          example: "2024-01-06T12:00:00Z"
+        - name: unit
+          in: query
+          required: true
+          description: Desired unit for the stock value
+          schema:
+            type: string
+            enum:
+              - PCS
+              - KG
+              - L
+          example: "KG"
+      responses:
+        '200':
+          description: Successfully retrieved the stock value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockResponse'
+              example:
+                unit: "KG"
+                quantity: 4.8
+        '400':
+          description: Missing mandatory query parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 400
+                message: "Either mandatory query parameter `at` or `unit` is not provided."
+                timestamp: "2026-04-14T10:00:00Z"
+                path: "/ingredients/1/stock"
+        '404':
+          description: Ingredient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 404
+                message: "Ingredient.id=999 is not found"
+                timestamp: "2026-04-14T10:00:00Z"
+                path: "/ingredients/999/stock"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
@@ -166,3 +242,23 @@ components:
           type: string
           description: Request path that caused the error
           example: "/ingredients/999"
+
+    StockResponse:
+      type: object
+      required:
+        - unit
+        - quantity
+      properties:
+        unit:
+          type: string
+          description: Unit of the stock value (PCS, KG, L)
+          enum:
+            - PCS
+            - KG
+            - L
+          example: "KG"
+        quantity:
+          type: number
+          format: double
+          description: Stock quantity
+          example: 4.8
