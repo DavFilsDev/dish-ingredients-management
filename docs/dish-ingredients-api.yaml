@@ -62,6 +62,56 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /ingredients/{id}:
+    get:
+      summary: Get an ingredient by ID
+      description: |
+        Returns a JSON object representing the ingredient with the specified ID, containing:
+        - id
+        - name
+        - category
+        - price
+      operationId: getIngredientById
+      tags:
+        - Ingredients
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier of the ingredient
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: Successfully retrieved the ingredient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngredientResponse'
+              example:
+                id: 1
+                name: "Laitue"
+                category: "VEGETABLE"
+                price: 800.00
+        '404':
+          description: Ingredient not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                status: 404
+                message: "Ingredient.id=999 is not found"
+                timestamp: "2026-04-14T10:00:00Z"
+                path: "/ingredients/999"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     IngredientResponse:
